@@ -3,7 +3,8 @@
  * Integrates frontend with Express + MongoDB authentication endpoints.
  */
 (function () {
-  const DEFAULT_API = 'http://localhost:5000/api';
+  // Use 127.0.0.1 by default to prevent IPv6 localhost resolution mismatch on Windows
+  const DEFAULT_API = 'http://127.0.0.1:5000/api';
 
   const Auth = {
     getApiUrl: function () {
@@ -42,34 +43,65 @@
       window.location.href = 'login.html';
     },
 
-    login: async function (email, password) {
-      const res = await fetch(`${this.getApiUrl()}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+    /**
+     * Resilient fetch helper that tries both 127.0.0.1 and localhost
+     */
+    _fetchAuth: async function (endpoint, body) {
+      const primaryUrl = `${this.getApiUrl()}${endpoint}`;
+      
+      // Determine alternative host (127.0.0.1 <-> localhost) for retry
+      let alternateUrl = null;
+      if (primaryUrl.includes('127.0.0.1')) {
+        alternateUrl = primaryUrl.replace('127.0.0.1', 'localhost');
+      } else if (primaryUrl.includes('localhost')) {
+        alternateUrl = primaryUrl.replace('localhost', '127.0.0.1');
+      }
+
+      let res;
+      try {
+        res = await fetch(primaryUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+      } catch (err) {
+        // If primary failed, attempt alternate
+        if (alternateUrl) {
+          try {
+            res = await fetch(alternateUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body),
+            });
+            // Alternate succeeded, remember this working URL format
+            if (alternateUrl.includes('localhost')) {
+              this.setApiUrl('http://localhost:5000/api');
+            } else {
+              this.setApiUrl('http://127.0.0.1:5000/api');
+            }
+          } catch (retryErr) {
+            throw new Error('Backend server is not running on port 5000. Start it in terminal with: cd server; npm run dev');
+          }
+        } else {
+          throw new Error('Could not connect to backend server at ' + primaryUrl + '. Please ensure your server is running.');
+        }
+      }
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.message || 'Login failed. Please check credentials.');
+        throw new Error(data.message || 'Authentication failed.');
       }
+      return data;
+    },
 
+    login: async function (email, password) {
+      const data = await this._fetchAuth('/auth/login', { email, password });
       this.setSession(data.token, data.user);
       return data;
     },
 
     register: async function (name, email, password) {
-      const res = await fetch(`${this.getApiUrl()}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || 'Registration failed.');
-      }
-
+      const data = await this._fetchAuth('/auth/register', { name, email, password });
       this.setSession(data.token, data.user);
       return data;
     },
@@ -79,7 +111,6 @@
       const user = this.getUser();
 
       if (navLinks) {
-        // Remove existing dynamic auth element if any
         const existingAuthItem = document.getElementById('nav-auth-item');
         if (existingAuthItem) existingAuthItem.remove();
 
@@ -125,11 +156,9 @@
 
   window.Auth = Auth;
 
-  // Initialize navbar state when document is loaded
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => Auth.initNavbar());
   } else {
     Auth.initNavbar();
   }
 })();
-

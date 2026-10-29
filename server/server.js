@@ -18,7 +18,10 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 
 // Standard middleware
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true,
+}));
 app.use(express.json());
 
 // Serve uploads folder statically so images are accessible at http://localhost:5000/uploads/filename
