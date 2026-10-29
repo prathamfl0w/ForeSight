@@ -1,0 +1,228 @@
+{
+  "info": {
+    "name": "ForeSight - Inventory & Demand Forecasting API",
+    "_postman_id": "8f8b3c91-236b-4e12-b7bc-0f6c2f7b8e1a",
+    "description": "Postman / Thunder Client collection for testing the ForeSight Inventory & Demand Forecasting backend.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "health"]
+        }
+      }
+    },
+    {
+      "name": "Auth - Register",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"testuser@example.com\",\n  \"password\": \"password123\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/register",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "register"]
+        }
+      }
+    },
+    {
+      "name": "Auth - Login (Demo User)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"demo@example.com\",\n  \"password\": \"password123\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "Auth - Get Current User (/me)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/me",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "me"]
+        }
+      }
+    },
+    {
+      "name": "Products - List All",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/products",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "products"]
+        }
+      }
+    },
+    {
+      "name": "Products - Search & Filter",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/products?search=Coffee&category=Beverages",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "products"],
+          "query": [
+            { "key": "search", "value": "Coffee" },
+            { "key": "category", "value": "Beverages" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Products - Create Product (multipart/form-data)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "name", "value": "AeroPress Coffee Maker", "type": "text" },
+            { "key": "sku", "value": "AERO-01", "type": "text" },
+            { "key": "category", "value": "Equipment", "type": "text" },
+            { "key": "currentStock", "value": "35", "type": "text" },
+            { "key": "leadTimeDays", "value": "7", "type": "text" },
+            { "key": "unitCost", "value": "1800", "type": "text" }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/products",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "products"]
+        }
+      }
+    },
+    {
+      "name": "Sales - Record Sale",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productId\": \"PASTE_PRODUCT_ID_HERE\",\n  \"quantity\": 3,\n  \"saleDate\": \"2026-10-29\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/sales",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "sales"]
+        }
+      }
+    },
+    {
+      "name": "Sales - List Sales",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/sales?days=30&limit=50",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "sales"],
+          "query": [
+            { "key": "days", "value": "30" },
+            { "key": "limit", "value": "50" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Inventory Forecast - Default 30-Day Window",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/inventory/forecast",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "inventory", "forecast"]
+        }
+      }
+    },
+    {
+      "name": "Inventory Forecast - 7-Day Window Filtered",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/inventory/forecast?windowDays=7&sort=urgency",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "inventory", "forecast"],
+          "query": [
+            { "key": "windowDays", "value": "7" },
+            { "key": "sort", "value": "urgency" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Inventory Forecast - Filter REORDER_NOW only",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/inventory/forecast?status=REORDER_NOW",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "inventory", "forecast"],
+          "query": [
+            { "key": "status", "value": "REORDER_NOW" }
+          ]
+        }
+      }
+    }
+  ]
+}
+
