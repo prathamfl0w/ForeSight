@@ -27,7 +27,7 @@ Built using HTML, CSS, and JavaScript with LocalStorage.
 Upgraded into a full-stack application with a React frontend, Express backend, and MongoDB database.
 
 **Features:**
-- User registration and login.
+
 - JWT authentication and protected routes.
 - MongoDB-based inventory and sales storage.
 - Complete product CRUD operations.
