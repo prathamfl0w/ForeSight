@@ -176,7 +176,7 @@ npm install
 npm run dev
 ```
 
-7. Open the local URL provided by Vite in your browser.
+7. Open local URL provided by Vite in your browser.
 
 ## API Endpoints
 
