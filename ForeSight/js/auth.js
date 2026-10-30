@@ -48,7 +48,7 @@
      */
     _fetchAuth: async function (endpoint, body) {
       const primaryUrl = `${this.getApiUrl()}${endpoint}`;
-      
+
       // Determine alternative host (127.0.0.1 <-> localhost) for retry
       let alternateUrl = null;
       if (primaryUrl.includes('127.0.0.1')) {
