@@ -198,7 +198,6 @@ Protected endpoints require JWT authentication.
 This project is developed by a three-member team.
 
 | Member | Contribution |
-|---|---|
 | Pratham | Frontend development, interface and styling |
 | Akshit | Database, backend and forecasting calculations |
 | Agrim | API integration, application flow and demonstration data |
