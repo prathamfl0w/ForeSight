@@ -199,9 +199,9 @@ This project is developed by a three-member team.
 
 | Member | Contribution |
 |---|---|
-| Member 1 | Frontend development, interface and styling |
-| Member 2 | Database, backend and forecasting calculations |
-| Member 3 | API integration, application flow and demonstration data |
+| Pratham | Frontend development, interface and styling |
+| Akshit | Database, backend and forecasting calculations |
+| Agrim | API integration, application flow and demonstration data |
 
 Individual contributions are maintained through GitHub commits and branches.
 
