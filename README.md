@@ -1,274 +1,217 @@
 # Inventory Reorder Point & Demand Forecasting Tool
 
-A small-business inventory prototype that predicts **when to reorder
-stock** using historical sales demand instead of relying only on a fixed
-low-stock threshold.
+A small-business inventory management application that predicts **when to reorder stock** using historical sales demand instead of fixed low-stock thresholds.
 
-The key idea is that two products with the same amount of stock may need
-very different reorder decisions if they sell at different rates. The
-Phase 1 prototype demonstrates this using plain HTML, CSS, JavaScript,
-and LocalStorage.
+Two products with the same stock quantity may have very different reorder requirements depending on how quickly they sell. This project uses sales velocity, demand variation, current stock, and supplier lead time to generate intelligent reorder recommendations.
 
-## Phase 1
+## Project Phases
 
-Phase 1 is a working browser-based prototype built with:
+### Phase 1 – Browser-Based Prototype
 
-- HTML
-- CSS
-- JavaScript
-- LocalStorage
+Built using HTML, CSS, and JavaScript with LocalStorage.
 
-No backend or database is required for this phase.
+**Features:**
+- Add and manage inventory products.
+- Record sales and automatically reduce stock.
+- Store products and sales using LocalStorage.
+- Calculate average daily demand and standard deviation.
+- Calculate safety stock and reorder points.
+- Estimate days of stock remaining.
+- Generate suggested order quantities.
+- Classify products as `REORDER_NOW`, `LOW`, or `OK`.
+- Change forecasting windows (7, 14, 30, and 60 days).
+- Load demonstration data and view inventory statistics.
 
-## Features
+### Phase 2 – Full-Stack MERN Application
 
-- Add inventory products
-- Record sales
-- Automatically reduce current stock when a sale is recorded
-- Store products and sales using LocalStorage
-- Calculate average daily demand
-- Calculate demand standard deviation
-- Calculate safety stock
-- Calculate reorder point
-- Calculate days of stock left
-- Calculate suggested order quantity
-- Classify inventory as:
-  - `REORDER_NOW`
-  - `LOW`
-  - `OK`
-- Change the forecasting window between 7, 14, 30, and 60 days
-- Display inventory statistics
-- Load realistic demonstration data
-- Clear stored data
-- Keep data after refreshing the browser
+Upgraded into a full-stack application with a React frontend, Express backend, and MongoDB database.
+
+**Features:**
+
+- JWT authentication and protected routes.
+- MongoDB-based inventory and sales storage.
+- Complete product CRUD operations.
+- Product image uploads using Multer.
+- Sales recording with automatic stock updates.
+- User-specific inventory and sales records.
+- Server-side demand forecasting.
+- Interactive React dashboard with reorder alerts.
+- Search, filtering, and sorting of inventory.
+- Persistent data across sessions.
+
+## Technology Stack
+
+| Phase 1 | Phase 2 |
+|---|---|
+| HTML5 | React 18 |
+| CSS3 | Vite |
+| JavaScript | Node.js |
+| LocalStorage | Express.js |
+| | MongoDB Atlas |
+| | Mongoose |
+| | JWT & bcryptjs |
+| | Multer |
 
 ## Forecasting Logic
 
-The forecasting engine uses daily sales history for the selected number
-of days. Days with no sales are counted as zero demand.
+The forecasting engine analyses daily sales over a selected historical window. Days without sales are counted as zero.
 
-### Average Daily Demand
-
+**1. Average Daily Demand**
 ```text
-avgDailyDemand = mean(daily sales series)
+avgDailyDemand = mean(daily sales)
 ```
 
-### Safety Stock
-
-The prototype uses:
-
+**2. Safety Stock**
 ```text
 safetyStock = z × demandStdDev × √leadTimeDays
 ```
+Default `z = 1.65`.
 
-The default value of `z` is:
-
-```text
-z = 1.65
-```
-
-### Reorder Point
-
+**3. Reorder Point**
 ```text
 reorderPoint =
 (avgDailyDemand × leadTimeDays) + safetyStock
 ```
 
-### Days of Stock Left
-
+**4. Days of Stock Left**
 ```text
 daysOfStockLeft =
 currentStock / avgDailyDemand
 ```
 
-If there is no demand, `daysOfStockLeft` remains `null` instead of
-dividing by zero.
-
-### Suggested Order Quantity
-
+**5. Suggested Order Quantity**
 ```text
-suggestedOrderQty =
-ceil(
+max(0, ceil(
   avgDailyDemand × (leadTimeDays + reviewPeriodDays)
-  + safetyStock
-  - currentStock
-)
+  + safetyStock - currentStock
+))
 ```
 
-The result is never below zero.
+Inventory is classified as:
 
-## Data Structure
-
-### Product
-
-```text
-{
-  id,
-  name,
-  category,
-  currentStock,
-  leadTimeDays,
-  unitCost
-}
-```
-
-### Sale Record
-
-```text
-{
-  id,
-  productId,
-  quantity,
-  saleDate
-}
-```
-
-In Phase 1, `saleDate` uses the format:
-
-```text
-YYYY-MM-DD
-```
-
-### Forecast Row
-
-```text
-{
-  productId,
-  name,
-  currentStock,
-  leadTimeDays,
-  avgDailyDemand,
-  demandStdDev,
-  safetyStock,
-  reorderPoint,
-  daysOfStockLeft,
-  suggestedOrderQty,
-  status,
-  salesCountInWindow
-}
-```
+- `REORDER_NOW`: Stock is at or below the reorder point.
+- `LOW`: Stock is within 25% above the reorder point.
+- `OK`: Sufficient stock is available.
 
 ## Project Structure
 
 ```text
-phase1/
-├── index.html
-├── css/
-│   └── style.css
-└── js/
-    ├── storage.js
-    ├── forecast.js
-    ├── app.js
-    └── demo-data.js
+inventory-forecast/
+│
+├── phase1/
+│   ├── index.html
+│   ├── css/
+│   └── js/
+│       ├── storage.js
+│       ├── forecast.js
+│       ├── app.js
+│       └── demo-data.js
+│
+├── server/
+│   ├── config/
+│   ├── models/
+│   ├── controllers/
+│   ├── routes/
+│   ├── middleware/
+│   ├── services/
+│   ├── uploads/
+│   ├── seed.js
+│   └── server.js
+│
+├── client/
+│   └── src/
+│       ├── api/
+│       ├── components/
+│       ├── context/
+│       ├── pages/
+│       └── styles.css
+│
+└── README.md
 ```
-
-The exact project structure may vary depending on the final
-implementation, but the Phase 1 prototype uses separate files for the
-page, styling, storage layer, forecasting engine, page integration, and
-demonstration data.
-
-## Demo Data
-
-The demo-data module creates approximately 60 days of realistic sales
-history for six products.
-
-The products are designed to demonstrate different forecasting
-situations:
-
-1.  A fast-moving product with low stock and a long lead time that
-    should require immediate reordering.
-2.  A fast-moving product with plenty of stock that should remain
-    healthy.
-3.  A slow-selling product with moderate stock.
-4.  An erratic product with large sales spikes, demonstrating how demand
-    variation increases safety stock.
-5.  A new product with stock but no sales history.
-6.  A seasonal product whose recent sales differ significantly from its
-    older sales.
-
-The demo data uses dates generated relative to the current date rather
-than hard-coded dates.
 
 ## How to Run
 
-1.  Clone the repository.
-2.  Open the project in VS Code.
-3.  Open `phase1/index.html` using a local development server such as VS
-    Code Live Server.
-4.  Open the application in a browser.
-5.  Use **Load Demo Data** to populate the dashboard.
-6.  Test adding products and recording sales.
-7.  Change the forecast window to see how the results respond to
-    different demand periods.
+### Phase 1
+1. Open the `phase1` folder in VS Code.
+2. Run `index.html` using Live Server.
+3. Click **Load Demo Data** to explore the prototype.
 
-## Testing Checklist
+### Phase 2
 
-Before evaluation, verify the following:
+**Prerequisites:** Node.js, npm, and a MongoDB Atlas account.
 
-- The dashboard loads without console errors.
-- A new product can be added.
-- A product appears in the forecast table after being added.
-- A sale can be recorded.
-- Recording a sale reduces the product's stock.
-- Forecast values update after sales are recorded.
-- A product can become `REORDER_NOW` when its stock falls below its
-  reorder point.
-- Products are ordered with `REORDER_NOW` first, then `LOW`, then
-  `OK`.
-- Changing the forecast window changes the calculated values.
-- Reloading the browser keeps the stored data.
-- Clearing the data removes the stored inventory and sales.
-- Demo data displays all important inventory statuses.
-- The application works at a narrow mobile width.
-- No important content overflows horizontally.
+1. Clone the repository:
+```bash
+git clone YOUR_GITHUB_REPOSITORY_URL
+```
+
+2. Install backend dependencies:
+```bash
+cd server
+npm install
+```
+
+3. Configure `server/.env`:
+```env
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_secret_key
+JWT_EXPIRES_IN=7d
+```
+
+4. Seed demonstration data:
+```bash
+node seed.js
+```
+
+5. Start the backend:
+```bash
+npm run dev
+```
+
+6. Open another terminal and start the frontend:
+```bash
+cd client
+npm install
+npm run dev
+```
+
+7. Open local URL provided by Vite in your browser.
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/register` | Register user |
+| POST | `/api/auth/login` | User login |
+| GET | `/api/auth/me` | Get user details |
+| GET, POST | `/api/products` | View and add products |
+| GET, PATCH, DELETE | `/api/products/:id` | Manage products |
+| GET, POST | `/api/sales` | View and record sales |
+| DELETE | `/api/sales/:id` | Delete a sale |
+| GET | `/api/inventory/forecast` | Generate inventory forecasts |
+
+Protected endpoints require JWT authentication.
 
 ## Team Contributions
 
 This project is developed by a three-member team.
 
----
+| Member | Contribution |
+| Pratham | Frontend development, interface and styling |
+| Akshit | Database, backend and forecasting calculations |
+| Agrim | API integration, application flow and demonstration data |
 
-Team Member Contribution
+Individual contributions are maintained through GitHub commits and branches.
 
----
+## Future Improvements
 
-Member 1 Phase 1 page structure, interface,
-and styling
-
-Member 2 LocalStorage data layer and
-forecasting calculations
-
-Member 3 Page integration, application flow,
-and demonstration data
-
----
-
-The GitHub repository contains individual commits and branches where
-appropriate so that each team member's contribution is visible.
-
-## Technologies
-
-- HTML5
-- CSS3
-- JavaScript
-- Browser LocalStorage
-
-## Phase 1 Scope
-
-Phase 1 focuses on proving the inventory forecasting concept through a
-working browser prototype.
-
-Later project phases may move the same forecasting concepts to a backend
-and database architecture, but those components are outside the scope of
-this Phase 1 evaluation.
+- Automated reorder notifications.
+- Supplier integration and purchase order generation.
+- Machine learning-based demand prediction.
+- Seasonal demand analysis.
+- Inventory analytics and report generation.
 
 ## Project Goal
 
-The main goal is to replace a simple static low-stock alert with a
-demand-based reorder decision.
-
-For example, two products may both have 40 units in stock. If one sells
-approximately 1 unit per day and another sells approximately 12 units
-per day, they should not receive the same reorder recommendation. The
-forecasting engine uses sales velocity, demand variation, stock level,
-and supplier lead time to make that distinction.
+The goal is to replace traditional static low-stock alerts with demand-based reorder decisions, helping small businesses manage inventory efficiently, avoid stockouts, and make better purchasing decisions.
